@@ -1,8 +1,6 @@
 import os
-import nltk
+import spacy
 import streamlit as st
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.decomposition import LatentDirichletAllocation
 import matplotlib.pyplot as plt
@@ -10,9 +8,8 @@ from wordcloud import WordCloud
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 
-# Descargar datos de NLTK
-nltk.download('punkt')
-nltk.download('stopwords')
+# Cargar el modelo de lenguaje en inglés de spaCy
+nlp = spacy.load('en_core_web_sm')
 
 # Función para cargar archivos subidos
 def load_uploaded_files(uploaded_files):
@@ -23,13 +20,11 @@ def load_uploaded_files(uploaded_files):
         corpus.append(text)
     return corpus
 
-# Preprocesamiento de texto
+# Preprocesamiento de texto usando spaCy
 def preprocess_text(text):
-    # Tokenización
-    tokens = word_tokenize(text.lower())
-    # Eliminación de palabras de parada y puntuación
-    stop_words = set(stopwords.words('english'))
-    tokens = [word for word in tokens if word.isalnum() and word not in stop_words]
+    # Procesar el texto con spaCy
+    doc = nlp(text.lower())
+    tokens = [token.text for token in doc if token.is_alpha and not token.is_stop]
     return " ".join(tokens)  # Convertir la lista de palabras en una cadena
 
 # Función para calcular la coherencia del modelo LDA
@@ -137,3 +132,4 @@ if uploaded_files:
 
     # Generar nubes de palabras para cada tema
     generate_wordcloud_for_topics(lda_model, vectorizer, optimal_num_topics)
+
